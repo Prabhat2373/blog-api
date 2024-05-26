@@ -33,7 +33,7 @@ export const ErrorMiddleware = (
     const message = `Json Web Token is Expired, Try again `;
     err = new ErrorHandler(message, 401);
   }
-
+  console.log("3");
   res.status(err.statusCode).json({
     success: false,
     message: err.message,

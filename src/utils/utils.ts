@@ -22,9 +22,9 @@ export const sendApiResponse = (
   };
 
   res
-    // .status(statusCode || status.toLocaleLowerCase() === "success" ? 200 : 404)
-    .status(statusCode)
+    .status(statusCode || status.toLocaleLowerCase() === "success" ? 200 : 404)
     .json(response);
+  // .status(statusCode)
 };
 
 interface Pagination {

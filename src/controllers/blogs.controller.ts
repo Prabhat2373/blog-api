@@ -2,6 +2,7 @@ import { RequestType } from "@/constants/AppConstants";
 import catchAsyncErrors from "@/middlewares/catchAsyncErrors";
 import Blog from "@/models/blogs.model";
 import Comment from "@/models/comment.model";
+import { sendApiResponse } from "@/utils/utils";
 import { Response } from "express";
 
 export const createBlogPost = catchAsyncErrors(
@@ -18,12 +19,26 @@ export const createBlogPost = catchAsyncErrors(
   }
 );
 
+export const getAllPosts = catchAsyncErrors(
+  async (req: RequestType, res: Response) => {
+    console.log("request", req);
+    console.log("1");
+    const blogPosts = await Blog.find({});
+    if (blogPosts) {
+      // res.json(blogPosts);
+      return sendApiResponse(
+        res,
+        "success",
+        blogPosts,
+        "Blog Posts Found Successfully",
+        200
+      );
+    }
+  }
+);
 export const getBlogPost = catchAsyncErrors(
   async (req: RequestType, res: Response) => {
-    const blogPost = await Blog.findById(req.params.id).populate(
-      "author"
-      // "comments"
-    );
+    const blogPost = await Blog.findById(req.params.id);
     if (blogPost) {
       res.json(blogPost);
     } else {

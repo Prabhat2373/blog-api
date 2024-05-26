@@ -5,14 +5,15 @@ import {
   registerUser,
   unfollowUser,
 } from "@/controllers/user.controller";
+import { isAuthenticatedUser } from "@/middlewares/Auth";
 import { Router } from "express";
 const accountRouter = Router();
 
 accountRouter.post("/login", loginUser);
 accountRouter.post("/register", registerUser);
 
-accountRouter.get("/:id", getUser);
-accountRouter.post("/follow/:id", followUser);
-accountRouter.post("/unfollow/:id", unfollowUser);
+accountRouter.get("/profile:id", isAuthenticatedUser, getUser);
+accountRouter.post("/follow/:id", isAuthenticatedUser, followUser);
+accountRouter.post("/unfollow/:id", isAuthenticatedUser, unfollowUser);
 
 export default accountRouter;

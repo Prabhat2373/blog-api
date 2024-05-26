@@ -80,24 +80,28 @@ export const getUser = catchAsyncErrors(
     // Find the user account by ID
     console.log("req", req.user);
 
-    const userAccount: IUserAccount | null = await UserAccount.findById(
-      req.user._id
-    ).select("-password");
+    if (req.user) {
+      const userAccount: IUserAccount | null = await UserAccount.findById(
+        req.user._id
+      ).select("-password");
 
-    console.log("userAccount", userAccount);
+      console.log("userAccount", userAccount);
 
-    // If the user account doesn't exist, return an error
-    if (!userAccount) {
-      // return res.status(404).json({ error: "User not found" });
-      return sendApiResponse(res, "error", null, "User Not Found!", 400);
+      // If the user account doesn't exist, return an error
+      if (!userAccount) {
+        // return res.status(404).json({ error: "User not found" });
+        return sendApiResponse(res, "error", null, "User Not Found!", 400);
+      }
+
+      return sendApiResponse(
+        res,
+        "success",
+        userAccount,
+        "User Found Successfully"
+      );
+    } else {
+      return sendApiResponse(res, "fail", {}, "Account not found", 401);
     }
-
-    return sendApiResponse(
-      res,
-      "success",
-      userAccount,
-      "User Found Successfully"
-    );
   }
 );
 

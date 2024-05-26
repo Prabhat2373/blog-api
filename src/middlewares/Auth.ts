@@ -14,6 +14,7 @@ interface RequestType extends Request {
 
 export const isAuthenticatedUser = catchAsyncErrors(
   async (req: RequestType, res: Response, next: NextFunction) => {
+    console.log("2");
     // const { token } = req.cookies;
     const token = req.headers.authorization?.split(" ")[1];
     // console.log("Cookie", req.cookies);
