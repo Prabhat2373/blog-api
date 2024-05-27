@@ -67,7 +67,7 @@ const BlogPostSchema: Schema = new Schema(
     title: { type: String, required: true },
     content: { type: FinalContentSchema, required: true },
     author: { type: Schema.Types.ObjectId, ref: "account", required: true },
-
+    thumbnail: { type: String, required: false },
     tags: { type: [String], default: [] },
     likes: [{ type: Schema.Types.ObjectId, ref: "account" }],
     comments: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
