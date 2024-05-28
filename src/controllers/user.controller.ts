@@ -7,6 +7,7 @@ import UserAccount, { IUserAccount, UserRole } from "../models/account.model";
 import sendToken from "../utils/jwtToken";
 import { sendApiResponse } from "../utils/utils";
 import { RequestType } from "@/constants/AppConstants";
+import Blog from "@/models/blogs.model";
 
 export const BASE_URL = "http://localhost:8001/api/v1/uploads/";
 
@@ -75,29 +76,72 @@ export const loginUser = catchAsyncErrors(
   }
 );
 
+// export const getUser = catchAsyncErrors(
+//   async (req: RequestType, res: Response) => {
+//     // Find the user account by ID
+//     console.log("req", req.user);
+
+//     if (req.user) {
+//       const userAccount: IUserAccount | null = await UserAccount.aggregate([
+//         { $match: { _id: req.user._id } },
+//         {
+//           $lookup: {
+//             from: "posts", // Make sure the collection name matches your BlogPost collection name
+//             localField: "_id",
+//             foreignField: "author",
+//             as: "articles",
+//           },
+//         },
+//         { $project: { password: 0 } }, // Exclude the password field
+//       ]);
+
+//       console.log("userAccount", userAccount);
+
+//       // If the user account doesn't exist, return an error
+//       if (!userAccount?.[0]) {
+//         // return res.status(404).json({ error: "User not found" });
+//         return sendApiResponse(res, "error", null, "User Not Found!", 400);
+//       }
+
+//       return sendApiResponse(
+//         res,
+//         "success",
+//         userAccount?.[0],
+//         "User Found Successfully"
+//       );
+//     } else {
+//       return sendApiResponse(res, "fail", {}, "Account not found", 401);
+//     }
+//   }
+// );
+
 export const getUser = catchAsyncErrors(
   async (req: RequestType, res: Response) => {
-    // Find the user account by ID
-    console.log("req", req.user);
-
     if (req.user) {
-      const userAccount: IUserAccount | null = await UserAccount.findById(
-        req.user._id
-      ).select("-password");
+      // Fetch user account without password
+      const userAccount = await UserAccount.findById(req.user._id)
+        .select("-password")
+        .exec();
 
-      console.log("userAccount", userAccount);
-
-      // If the user account doesn't exist, return an error
       if (!userAccount) {
-        // return res.status(404).json({ error: "User not found" });
-        return sendApiResponse(res, "error", null, "User Not Found!", 400);
+        return sendApiResponse(res, "error", null, "User not found", 400);
       }
+
+      // Fetch articles for the user
+      const articles = await Blog.find({ author: req.user._id }).exec();
+      const drafts = await Blog.find({
+        author: req.user?._id,
+        status: "draft",
+      }).exec();
+
+      // Combine user account and articles
+      const userWithArticles = { ...userAccount.toObject(), articles, drafts };
 
       return sendApiResponse(
         res,
         "success",
-        userAccount,
-        "User Found Successfully"
+        userWithArticles, // Return the combined object
+        "User found successfully"
       );
     } else {
       return sendApiResponse(res, "fail", {}, "Account not found", 401);

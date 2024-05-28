@@ -12,7 +12,7 @@ const accountRouter = Router();
 accountRouter.post("/login", loginUser);
 accountRouter.post("/register", registerUser);
 
-accountRouter.get("/profile:id", isAuthenticatedUser, getUser);
+accountRouter.get("/profile", isAuthenticatedUser, getUser);
 accountRouter.post("/follow/:id", isAuthenticatedUser, followUser);
 accountRouter.post("/unfollow/:id", isAuthenticatedUser, unfollowUser);
 

@@ -21,6 +21,7 @@ export interface IUserAccount extends Document {
 
   followers: mongoose.Types.ObjectId[];
   following: mongoose.Types.ObjectId[];
+  articles: mongoose.Types.ObjectId[];
   role: UserRole;
   getJWTToken: () => string;
   comparePassword: (password: string) => Promise<boolean>;
@@ -39,6 +40,7 @@ const userAccountSchema: Schema = new Schema({
 
   followers: [{ type: Schema.Types.ObjectId, ref: "Account" }],
   following: [{ type: Schema.Types.ObjectId, ref: "Account" }],
+  articles: [{ type: Schema.Types.ObjectId, ref: "Posts" }],
 });
 
 // Hash password before saving
@@ -80,6 +82,6 @@ userAccountSchema.methods.getResetPasswordToken = function (): string {
 
   return resetToken;
 };
-const UserAccount = mongoose.model<IUserAccount>("account", userAccountSchema);
+const UserAccount = mongoose.model<IUserAccount>("Account", userAccountSchema);
 
 export default UserAccount;

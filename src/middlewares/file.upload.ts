@@ -79,6 +79,7 @@ export const uploadAndCompressFile = (fieldName: string) => {
               metadata: uploadStream.metadata,
               file_name: filename,
             };
+            
             next();
           });
 

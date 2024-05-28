@@ -4,6 +4,7 @@ export interface IBlogPost extends Document {
   title: string;
   content: IContent;
   author: mongoose.Types.ObjectId;
+  status: "draft" | "published"; // New field
 
   createdAt: Date;
   tags: string[];
@@ -30,7 +31,7 @@ export interface Attrs {
 export interface Content2 {
   type: string;
   marks: Mark[];
-  text: string;
+  text?: string;
 }
 
 export interface Mark {
@@ -44,7 +45,7 @@ const MarkSchema: Schema = new Schema({
 const Content2Schema: Schema = new Schema({
   type: { type: String, required: true },
   marks: { type: [MarkSchema], required: true },
-  text: { type: String, required: true },
+  text: { type: String, required: false },
 });
 
 const AttrsSchema: Schema = new Schema({
@@ -66,11 +67,12 @@ const BlogPostSchema: Schema = new Schema(
   {
     title: { type: String, required: true },
     content: { type: FinalContentSchema, required: true },
-    author: { type: Schema.Types.ObjectId, ref: "account", required: true },
+    author: { type: Schema.Types.ObjectId, ref: "Account", required: true },
     thumbnail: { type: String, required: false },
     tags: { type: [String], default: [] },
-    likes: [{ type: Schema.Types.ObjectId, ref: "account" }],
+    likes: [{ type: Schema.Types.ObjectId, ref: "Account" }],
     comments: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
+    status: { type: String, enum: ["draft", "published"], default: "draft" }, // New field
   },
   { timestamps: true }
 );

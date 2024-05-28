@@ -11,19 +11,15 @@ import { type Request } from "express";
 
 export const createBlogPost = catchAsyncErrors(
   async (req: Request, res: Response) => {
-    await Upload(req, res);
-    // await uploadMiddleware(req, res);
     const { title, content, tags } = req.body;
     console.log("tags", tags);
-    console.log("request", req?.file, req.files);
 
-    // console.log("file", req?.files);
     const blogPost = new Blog({
       title,
       content: JSON.parse(content),
       author: req?.user?.id,
       tags: JSON.parse(tags),
-      thumbnail: BASE_URL + req?.file?.filename || "",
+      thumbnail: BASE_URL + req.fileUpload?.filename || "",
     });
     // console.log("blogPost", blogPost);
     await blogPost.save();
@@ -34,6 +30,94 @@ export const createBlogPost = catchAsyncErrors(
       blogPost,
       "Post Published Successfully!",
       201
+    );
+  }
+);
+
+export const createDraft = catchAsyncErrors(
+  async (req: RequestType, res: Response) => {
+    const { title, content, tags } = req.body;
+
+    const draftPost = new Blog({
+      title,
+      content,
+      author: req.user?._id,
+      status: "draft",
+      tags,
+      // thumbnail: req.body.thumbnail || "",
+    });
+
+    await draftPost.save();
+
+    return sendApiResponse(
+      res,
+      "success",
+      draftPost,
+      "Draft created successfully",
+      201
+    );
+  }
+);
+
+export const updateDraft = catchAsyncErrors(
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { title, content, tags, thumbnail } = req.body;
+
+    const updatedDraft = await Blog.findByIdAndUpdate(
+      id,
+      { title, content, tags, thumbnail },
+      { new: true }
+    );
+
+    if (!updatedDraft) {
+      return sendApiResponse(res, "error", null, "Draft not found", 404);
+    }
+
+    return sendApiResponse(
+      res,
+      "success",
+      updatedDraft,
+      "Draft updated successfully"
+    );
+  }
+);
+
+export const publishDraft = catchAsyncErrors(
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+
+    const updatedDraft = await Blog.findByIdAndUpdate(
+      id,
+      { status: "published" },
+      { new: true }
+    );
+
+    if (!updatedDraft) {
+      return sendApiResponse(res, "error", null, "Draft not found", 404);
+    }
+
+    return sendApiResponse(
+      res,
+      "success",
+      updatedDraft,
+      "Draft published successfully"
+    );
+  }
+);
+
+export const getUserDrafts = catchAsyncErrors(
+  async (req: RequestType, res: Response) => {
+    const drafts = await Blog.find({
+      author: req.user?._id,
+      status: "draft",
+    }).exec();
+
+    return sendApiResponse(
+      res,
+      "success",
+      drafts,
+      "Drafts retrieved successfully"
     );
   }
 );
