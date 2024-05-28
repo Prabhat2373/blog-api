@@ -27,10 +27,15 @@ router.get("/blogs/:id", getBlogPost);
 router.post("/blogs/like/:id", isAuthenticatedUser, likeBlogPost);
 router.post("/blogs/comment/:id", isAuthenticatedUser, commentOnBlogPost);
 router.post("/blogs/share/:id", isAuthenticatedUser, shareBlogPost);
-router.post("/blogs/draft", isAuthenticatedUser, createDraft);
-router.put("/blogs/draft/:id", isAuthenticatedUser, updateDraft);
-router.get("/blogs/drafts", isAuthenticatedUser, getUserDrafts);
-router.put("/blogs/publish/:id", isAuthenticatedUser, publishDraft);
+router.post(
+  "/blogs/drafts",
+  uploadAndCompressFile("file", true),
+  isAuthenticatedUser,
+  createDraft
+);
+router.put("/blogs/drafts/:id", isAuthenticatedUser, updateDraft);
+router.get("/blogs/user-drafts", isAuthenticatedUser, getUserDrafts);
+router.put("/blogs/drafts/publish/:id", isAuthenticatedUser, publishDraft);
 
 const blogRouter = router;
 export default blogRouter;

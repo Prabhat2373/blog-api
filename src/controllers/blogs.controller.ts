@@ -108,17 +108,19 @@ export const publishDraft = catchAsyncErrors(
 
 export const getUserDrafts = catchAsyncErrors(
   async (req: RequestType, res: Response) => {
-    const drafts = await Blog.find({
-      author: req.user?._id,
-      status: "draft",
-    }).exec();
+    console.log("req", req);
+    //   const drafts = await Blog.find({
+    //     author: req.user?.id,
+    //     status: "draft",
+    //   });
 
-    return sendApiResponse(
-      res,
-      "success",
-      drafts,
-      "Drafts retrieved successfully"
-    );
+    //   return sendApiResponse(
+    //     res,
+    //     "success",
+    //     drafts,
+    //     "Drafts retrieved successfully"
+    //   );
+    return res.json({ data: "test" });
   }
 );
 
@@ -126,7 +128,9 @@ export const getAllPosts = catchAsyncErrors(
   async (req: RequestType, res: Response) => {
     console.log("request", req);
     console.log("1");
-    const blogPosts = await Blog.find({}).populate("author");
+    const blogPosts = await Blog.find({ status: "published" }).populate(
+      "author"
+    );
     if (blogPosts) {
       // res.json(blogPosts);
       return sendApiResponse(

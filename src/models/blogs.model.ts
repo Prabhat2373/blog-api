@@ -66,7 +66,7 @@ const FinalContentSchema: Schema = new Schema({
 const BlogPostSchema: Schema = new Schema(
   {
     title: { type: String, required: true },
-    content: { type: FinalContentSchema, required: true },
+    content: { type: JSON, required: true },
     author: { type: Schema.Types.ObjectId, ref: "Account", required: true },
     thumbnail: { type: String, required: false },
     tags: { type: [String], default: [] },
