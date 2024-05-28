@@ -27,6 +27,7 @@ app.use("/api/v1", blogRouter);
 app.use("/api/v1", authRouter);
 
 app.get("/api/v1/files/:name", download);
+app.get("/api/v1/uploads/:name", download);
 // TEST ONLY
 app.get("/", (req, res) => {
   res.status(200).json({

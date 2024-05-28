@@ -8,7 +8,7 @@ import sendToken from "../utils/jwtToken";
 import { sendApiResponse } from "../utils/utils";
 import { RequestType } from "@/constants/AppConstants";
 
-export const BASE_URL = "http://localhost:8001/api/v1/files/";
+export const BASE_URL = "http://localhost:8001/api/v1/uploads/";
 
 export const registerUser = catchAsyncErrors(
   async (req: Request, res: Response) => {

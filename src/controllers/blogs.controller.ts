@@ -1,31 +1,40 @@
 import { RequestType } from "@/constants/AppConstants";
 import catchAsyncErrors from "@/middlewares/catchAsyncErrors";
-import Upload, { createUploadMiddleware } from "@/middlewares/upload";
+import Upload from "@/middlewares/upload";
 import Blog from "@/models/blogs.model";
 import Comment from "@/models/comment.model";
 import { sendApiResponse } from "@/utils/utils";
 import { Response } from "express";
 import { BASE_URL } from "./user.controller";
-const uploadMiddleware = createUploadMiddleware("thumbnail");
+import { type Request } from "express";
+// const uploadMiddleware = createUploadMiddleware("thumbnail");
 
 export const createBlogPost = catchAsyncErrors(
-  async (req: RequestType, res: Response) => {
-    // await uploadMiddleware(req, res);
+  async (req: Request, res: Response) => {
     await Upload(req, res);
+    // await uploadMiddleware(req, res);
     const { title, content, tags } = req.body;
+    console.log("tags", tags);
+    console.log("request", req?.file, req.files);
 
     // console.log("file", req?.files);
     const blogPost = new Blog({
       title,
       content: JSON.parse(content),
       author: req?.user?.id,
-      tags,
-      // thumbnail:
-      //   req.files && req.files?.length ? BASE_URL + req.files[0].filename : "",
+      tags: JSON.parse(tags),
+      thumbnail: BASE_URL + req?.file?.filename || "",
     });
     // console.log("blogPost", blogPost);
     await blogPost.save();
-    res.status(201).json(blogPost);
+    // res.status(201).json(blogPost);
+    return sendApiResponse(
+      res,
+      "success",
+      blogPost,
+      "Post Published Successfully!",
+      201
+    );
   }
 );
 
