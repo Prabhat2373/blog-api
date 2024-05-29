@@ -6,10 +6,10 @@ import {
   commentOnBlogPost,
   shareBlogPost,
   getAllPosts,
-  createDraft,
   updateDraft,
   publishDraft,
   getUserDrafts,
+  createOrUpdateDraft,
 } from "../controllers/blogs.controller";
 import { isAuthenticatedUser } from "@/middlewares/Auth";
 import { uploadAndCompressFile } from "@/middlewares/file.upload";
@@ -28,14 +28,14 @@ router.post("/blogs/like/:id", isAuthenticatedUser, likeBlogPost);
 router.post("/blogs/comment/:id", isAuthenticatedUser, commentOnBlogPost);
 router.post("/blogs/share/:id", isAuthenticatedUser, shareBlogPost);
 router.post(
-  "/blogs/drafts",
+  "/posts/drafts",
   uploadAndCompressFile("file", true),
   isAuthenticatedUser,
-  createDraft
+  createOrUpdateDraft
 );
-router.put("/blogs/drafts/:id", isAuthenticatedUser, updateDraft);
-router.get("/blogs/user-drafts", isAuthenticatedUser, getUserDrafts);
-router.put("/blogs/drafts/publish/:id", isAuthenticatedUser, publishDraft);
+router.put("/posts/drafts/:id", isAuthenticatedUser, updateDraft);
+router.get("/posts/drafts", isAuthenticatedUser, getUserDrafts);
+router.put("/posts/drafts/publish/:id", isAuthenticatedUser, publishDraft);
 
 const blogRouter = router;
 export default blogRouter;

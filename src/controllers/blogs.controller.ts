@@ -13,13 +13,16 @@ export const createBlogPost = catchAsyncErrors(
   async (req: Request, res: Response) => {
     const { title, content, tags } = req.body;
     console.log("tags", tags);
+    const parsedTags = JSON.parse(tags)?.length ? JSON.parse(tags) : [];
+    console.log("parsedTags", parsedTags);
 
     const blogPost = new Blog({
       title,
       content: JSON.parse(content),
       author: req?.user?.id,
-      tags: JSON.parse(tags),
+      tags: parsedTags,
       thumbnail: BASE_URL + req.fileUpload?.filename || "",
+      status: "published",
     });
     // console.log("blogPost", blogPost);
     await blogPost.save();
@@ -34,31 +37,79 @@ export const createBlogPost = catchAsyncErrors(
   }
 );
 
-export const createDraft = catchAsyncErrors(
+// export const createDraft = catchAsyncErrors(
+//   async (req: RequestType, res: Response) => {
+//     const { title, content, tags } = req.body;
+
+//     const draftPost = new Blog({
+//       title,
+//       content,
+//       author: req.user?._id,
+//       status: "draft",
+//       tags,
+//       // thumbnail: req.body.thumbnail || "",
+//     });
+
+//     await draftPost.save();
+
+//     return sendApiResponse(
+//       res,
+//       "success",
+//       draftPost,
+//       "Draft created successfully",
+//       201
+//     );
+//   }
+// );
+
+export const createOrUpdateDraft = catchAsyncErrors(
   async (req: RequestType, res: Response) => {
-    const { title, content, tags } = req.body;
+    console.log("getting here");
+    const { draftId, title, content, tags, thumbnail } = req.body;
 
-    const draftPost = new Blog({
-      title,
-      content,
-      author: req.user?._id,
-      status: "draft",
-      tags,
-      // thumbnail: req.body.thumbnail || "",
-    });
+    let draftPost;
 
-    await draftPost.save();
+    console.log("draftId", draftId, !!draftId, typeof draftId);
+
+    if (!!draftId && draftId != "undefined") {
+      console.log("updating blog");
+      // Update existing draft
+      draftPost = await Blog.findByIdAndUpdate(
+        { id: draftId },
+        { title, content, tags, thumbnail },
+        { new: true }
+      );
+      if (!draftPost) {
+        return sendApiResponse(res, "error", null, "Draft not found", 404);
+      }
+      // draftPost.title = title;
+      // draftPost.content = content;
+      // draftPost.tags = tags;
+      // draftPost.thumbnail = thumbnail || draftPost.thumbnail;
+      // draftPost.updatedAt = new Date();
+      // await draftPost.save();
+    } else {
+      // Create new draft
+      draftPost = new Blog({
+        title,
+        content,
+        author: req.user?._id,
+        status: "draft",
+        tags,
+        thumbnail: thumbnail || "",
+      });
+      await draftPost.save();
+    }
 
     return sendApiResponse(
       res,
       "success",
       draftPost,
-      "Draft created successfully",
+      draftId ? "Draft updated successfully" : "Draft created successfully",
       201
     );
   }
 );
-
 export const updateDraft = catchAsyncErrors(
   async (req: Request, res: Response) => {
     const { id } = req.params;
@@ -109,28 +160,28 @@ export const publishDraft = catchAsyncErrors(
 export const getUserDrafts = catchAsyncErrors(
   async (req: RequestType, res: Response) => {
     console.log("req", req);
-    //   const drafts = await Blog.find({
-    //     author: req.user?.id,
-    //     status: "draft",
-    //   });
+    const drafts = await Blog.find({
+      author: req.user?.id,
+      status: "draft",
+    });
 
-    //   return sendApiResponse(
-    //     res,
-    //     "success",
-    //     drafts,
-    //     "Drafts retrieved successfully"
-    //   );
-    return res.json({ data: "test" });
+    return sendApiResponse(
+      res,
+      "success",
+      drafts,
+      "Drafts retrieved successfully"
+    );
   }
 );
 
 export const getAllPosts = catchAsyncErrors(
   async (req: RequestType, res: Response) => {
-    console.log("request", req);
+    // console.log("request", req);
     console.log("1");
     const blogPosts = await Blog.find({ status: "published" }).populate(
       "author"
     );
+    console.log("blogPosts", blogPosts);
     if (blogPosts) {
       // res.json(blogPosts);
       return sendApiResponse(
