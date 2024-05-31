@@ -10,6 +10,7 @@ import {
   publishDraft,
   getUserDrafts,
   createOrUpdateDraft,
+  getPostComments,
 } from "../controllers/blogs.controller";
 import { isAuthenticatedUser } from "@/middlewares/Auth";
 import { uploadAndCompressFile } from "@/middlewares/file.upload";
@@ -36,6 +37,7 @@ router.post(
 router.put("/posts/drafts/:id", isAuthenticatedUser, updateDraft);
 router.get("/posts/drafts", isAuthenticatedUser, getUserDrafts);
 router.put("/posts/drafts/publish/:id", isAuthenticatedUser, publishDraft);
+router.get("/posts/comments/:id", isAuthenticatedUser, getPostComments);
 
 const blogRouter = router;
 export default blogRouter;

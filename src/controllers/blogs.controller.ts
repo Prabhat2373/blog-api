@@ -196,7 +196,7 @@ export const getAllPosts = catchAsyncErrors(
 );
 export const getBlogPost = catchAsyncErrors(
   async (req: RequestType, res: Response) => {
-    const blogPost = await Blog.findById(req.params.id);
+    const blogPost = await Blog.findById(req.params.id).populate("author");
     if (blogPost) {
       res.json(blogPost);
     } else {
@@ -218,22 +218,99 @@ export const likeBlogPost = catchAsyncErrors(
   }
 );
 
+// export const commentOnBlogPost = catchAsyncErrors(
+//   async (req: RequestType, res: Response) => {
+//     const { content } = req.body;
+//     const blogPost = await Blog.findById(req.params.id);
+//     if (blogPost) {
+//       const comment = new Comment({
+//         content,
+//         author: req?.user?.id,
+//         post: req.params.id,
+//       });
+//       await comment.save();
+//       blogPost.comments.push(comment._id);
+//       await blogPost.save();
+//       // res.status(201).json(comment);
+//       return sendApiResponse(
+//         res,
+//         "success",
+//         comment,
+//         "Comment Posted Successfully",
+//         200
+//       );
+//     } else {
+//       // res.status(404).json({ message: "Blog post not found" });
+//       return sendApiResponse(res, "error", null, "Blog post not found", 404);
+//     }
+//   }
+// );
+
 export const commentOnBlogPost = catchAsyncErrors(
-  async (req: RequestType, res: Response) => {
-    const { content } = req.body;
+  async (req: Request, res: Response) => {
+    const { content, parentCommentId } = req.body; // Include parentCommentId in the request body
     const blogPost = await Blog.findById(req.params.id);
+
     if (blogPost) {
       const comment = new Comment({
         content,
         author: req?.user?.id,
         post: req.params.id,
+        parent: parentCommentId || null, // Set parent if parentCommentId is provided
       });
+
       await comment.save();
-      blogPost.comments.push(comment._id);
-      await blogPost.save();
-      res.status(201).json(comment);
+
+      if (parentCommentId) {
+        const parentComment = await Comment.findById(parentCommentId);
+        if (parentComment) {
+          parentComment.replies.push(comment._id); // Assuming replies field exists in Comment model
+          await parentComment.save();
+        } else {
+          return sendApiResponse(
+            res,
+            "error",
+            null,
+            "Parent comment not found",
+            404
+          );
+        }
+      } else {
+        blogPost.comments.push(comment._id);
+        await blogPost.save();
+      }
+
+      return sendApiResponse(
+        res,
+        "success",
+        comment,
+        "Comment Posted Successfully",
+        200
+      );
     } else {
-      res.status(404).json({ message: "Blog post not found" });
+      return sendApiResponse(res, "error", null, "Blog post not found", 404);
+    }
+  }
+);
+
+export const getPostComments = catchAsyncErrors(
+  async (req: Request, res: Response) => {
+    const postId = req?.params?.id;
+
+    if (postId) {
+      const comments = await Comment.find({
+        post: postId,
+      }).populate("author"); // error on this code only
+      console.log("comments", comments);
+      return sendApiResponse(
+        res,
+        "success",
+        comments,
+        "Comments Found Successfully",
+        200
+      );
+    } else {
+      return sendApiResponse(res, "error", null, "Post not found", 404);
     }
   }
 );
