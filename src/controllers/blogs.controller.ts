@@ -370,3 +370,55 @@ export const getRepliesForComment = catchAsyncErrors(
     );
   }
 );
+
+export const deleteComment = catchAsyncErrors(
+  async (req: RequestType, res: Response) => {
+    const { id } = req.params;
+    const userId = req.user?.id;
+    const comment = await Comment.findById(id).populate("author");
+    console.log("userId", userId, comment?.author);
+    if (userId !== comment?.author?._id) {
+      return sendApiResponse(res, "error", null, "Forbidden", 400);
+    }
+
+    if (comment) {
+      await comment.deleteOne();
+      // Optionally, delete associated replies
+      await Reply.deleteMany({ comment: id });
+      return sendApiResponse(
+        res,
+        "success",
+        null,
+        "Comment Deleted Successfully",
+        200
+      );
+    } else {
+      return sendApiResponse(res, "error", null, "Comment not found", 404);
+    }
+  }
+);
+
+export const deleteReply = catchAsyncErrors(
+  async (req: RequestType, res: Response) => {
+    const { replyId } = req.params;
+    const reply = await Reply.findById(replyId).populate("author");
+    const userId = req.user?.id;
+    console.log("userId", userId != reply?.author?._id?.toString());
+    if (userId != reply?.author?._id) {
+      return sendApiResponse(res, "error", null, "Forbidden", 400);
+    }
+
+    if (reply) {
+      await reply.deleteOne();
+      return sendApiResponse(
+        res,
+        "success",
+        null,
+        "Reply Deleted Successfully",
+        200
+      );
+    } else {
+      return sendApiResponse(res, "error", null, "Reply not found", 404);
+    }
+  }
+);
