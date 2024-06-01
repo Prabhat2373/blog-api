@@ -25,7 +25,7 @@ const CommentSchema: Schema = new Schema(
     author: { type: Schema.Types.ObjectId, ref: "Account", required: true },
     post: { type: Schema.Types.ObjectId, ref: "Posts", required: true },
     parent: { type: Schema.Types.ObjectId, ref: "Comment", default: null },
-    replies: [{ type: Schema.Types.ObjectId, ref: "Comment" }], // Add replies field
+    replies: [{ type: Schema.Types.ObjectId, ref: "Reply" }],
   },
   { timestamps: true }
 );

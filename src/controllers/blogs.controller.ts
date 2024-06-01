@@ -7,6 +7,7 @@ import { sendApiResponse } from "@/utils/utils";
 import { Response } from "express";
 import { BASE_URL } from "./user.controller";
 import { type Request } from "express";
+import Reply from "@/models/reply.model";
 // const uploadMiddleware = createUploadMiddleware("thumbnail");
 
 export const createBlogPost = catchAsyncErrors(
@@ -324,5 +325,48 @@ export const shareBlogPost = catchAsyncErrors(
     } else {
       res.status(404).json({ message: "Blog post not found" });
     }
+  }
+);
+
+export const replyToComment = catchAsyncErrors(
+  async (req: RequestType, res: Response) => {
+    const { content } = req.body;
+    const comment = await Comment.findById(req.params.commentId);
+    if (comment) {
+      console.log("author", req.user?.id);
+      const reply = new Reply({
+        content,
+        author: req?.user?.id,
+        comment: req.params.commentId,
+      });
+      await reply.save();
+      comment.replies.push(reply._id);
+      await comment.save();
+      return sendApiResponse(
+        res,
+        "success",
+        reply,
+        "Reply Posted Successfully",
+        200
+      );
+    } else {
+      return sendApiResponse(res, "error", null, "Comment not found", 404);
+    }
+  }
+);
+
+export const getRepliesForComment = catchAsyncErrors(
+  async (req: Request, res: Response) => {
+    const replies = await Reply.find({
+      comment: req.params.commentId,
+    }).populate("author"); // Populate author details
+
+    return sendApiResponse(
+      res,
+      "success",
+      replies,
+      "Replies fetched successfully",
+      200
+    );
   }
 );
