@@ -3,6 +3,8 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 
+import findOrCreate from "mongoose-findorcreate";
+
 export enum UserRole {
   READER = "reader",
   AUTHOR = "author",
@@ -15,7 +17,7 @@ interface CompletedTest {
 export interface IUserAccount extends Document {
   name: string;
   email: string;
-  password: string;
+  password?: string;
   avatar?: string;
   isVerified?: boolean;
 
@@ -35,7 +37,7 @@ const userAccountSchema: Schema = new Schema({
 
   isVerified: { type: Boolean, default: false },
   // role: { type: String, required: true, enum: Object.values(UserRole) },
-  password: { type: String, required: true },
+  password: { type: String, required: false },
   avatar: { type: String },
 
   followers: [{ type: Schema.Types.ObjectId, ref: "Account" }],
@@ -52,6 +54,8 @@ userAccountSchema.pre<IUserAccount>("save", async function (next) {
   this.password = await bcrypt.hash(this.password, 10);
   next();
 });
+
+userAccountSchema.plugin(findOrCreate);
 
 // Generate JWT token
 userAccountSchema.methods.getJWTToken = function (): string {

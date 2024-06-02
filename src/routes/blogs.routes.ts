@@ -47,7 +47,7 @@ router.delete("/posts/comments/:id", isAuthenticatedUser, deleteComment);
 // Reply routes
 router.post("/comment/:commentId/reply", isAuthenticatedUser, replyToComment);
 router.get("/comment/:commentId/replies", getRepliesForComment);
-router.delete("/comment/replies/:replyId",isAuthenticatedUser, deleteReply);
+router.delete("/comment/replies/:replyId", isAuthenticatedUser, deleteReply);
 
 const blogRouter = router;
 export default blogRouter;

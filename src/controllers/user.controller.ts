@@ -144,7 +144,7 @@ export const getUser = catchAsyncErrors(
         "User found successfully"
       );
     } else {
-      return sendApiResponse(res, "fail", {}, "Account not found", 401);
+      return sendApiResponse(res, "error", {}, "Account not found", 401);
     }
   }
 );

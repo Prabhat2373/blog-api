@@ -5,11 +5,12 @@ import express, { Application } from "express";
 import { download } from "./helper/downloadImage";
 import { ErrorMiddleware } from "./middlewares/error";
 // import { companyRoutes } from "./routes/company.routes";
-
+import session from "express-session";
 import corsConfig from "./config/cors.config";
 import accountRouter from "./routes/account.routes";
 import blogRouter from "./routes/blogs.routes";
 import authRouter from "./routes/auth.routes";
+import passport from "passport";
 
 const app: Application = express();
 
@@ -21,6 +22,18 @@ app.use(express.urlencoded({ extended: true }));
 // app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+app.use(
+  session({
+    secret: "keyboard cat",
+    resave: false,
+    saveUninitialized: false,
+    cookie: { secure: true },
+  })
+);
+
+app.use(passport.authenticate("session"));
+
 // ROUTES
 app.use("/api/v1", accountRouter);
 app.use("/api/v1", blogRouter);
