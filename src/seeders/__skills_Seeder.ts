@@ -1,4 +1,4 @@
-import UserAccount from "@/models/account.model";
+import UserAccount from "../models/account.model";
 import mongoose from "mongoose";
 // import Skill from "../models/skill.model";
 

@@ -23,5 +23,6 @@
         "./src/routes/*"
       ],
     },
-  }
+  },
+  // "typeRoots": [ "./types", "./node_modules/@types"]
 }

@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import skillsSeeder from "./seeders/skillsSeeder";
+import skillsSeeder from "./seeders/__skills_Seeder";
 
 // Connect to your database
 // mongoose.connect(process.env.MONGO_URI);

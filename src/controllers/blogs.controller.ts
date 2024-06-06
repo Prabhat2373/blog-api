@@ -63,6 +63,45 @@ export const createBlogPost = catchAsyncErrors(
 //   }
 // );
 
+export const updateBlog = catchAsyncErrors(
+  async (req: RequestType, res: Response) => {
+    const { title, content, tags } = req.body;
+    const id = req?.params?.id;
+    const userId = req.user?.id;
+
+    const blogPost = await Blog.findById(id).populate("author");
+    const parsedTags = JSON.parse(tags)?.length ? JSON.parse(tags) : [];
+    const blogAuthorId = blogPost?.author?._id?.toString();
+
+    console.log("blogPost", blogPost?.author);
+    console.log("meta", blogAuthorId, userId);
+
+    if (userId === blogAuthorId) {
+      const updatedData = {
+        title,
+        content: JSON.parse(content),
+        tags: parsedTags,
+      };
+      if (req.fileUpload?.filename) {
+        updatedData.thumbnail = BASE_URL + req.fileUpload?.filename;
+      }
+
+      const updatedBlog = await blogPost?.updateOne(updatedData, {
+        new: true,
+      });
+      console.log("updatedBlog", updatedBlog);
+      return sendApiResponse(
+        res,
+        "success",
+        { _id: id },
+        "Post Updated Successfully",
+        200
+      );
+    }
+    return sendApiResponse(res, "error", {}, "Only Author can updat blog", 400);
+  }
+);
+
 export const createOrUpdateDraft = catchAsyncErrors(
   async (req: RequestType, res: Response) => {
     console.log("getting here");

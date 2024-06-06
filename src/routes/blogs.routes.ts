@@ -15,6 +15,7 @@ import {
   getRepliesForComment,
   deleteReply,
   deleteComment,
+  updateBlog,
 } from "../controllers/blogs.controller";
 import { isAuthenticatedUser } from "@/middlewares/Auth";
 import { uploadAndCompressFile } from "@/middlewares/file.upload";
@@ -29,6 +30,12 @@ router.post(
 );
 router.get("/blogs", getAllPosts);
 router.get("/blogs/:id", getBlogPost);
+router.put(
+  "/blogs/:id",
+  isAuthenticatedUser,
+  uploadAndCompressFile("file", true),
+  updateBlog
+);
 router.post("/blogs/like/:id", isAuthenticatedUser, likeBlogPost);
 router.post("/blogs/comment/:id", isAuthenticatedUser, commentOnBlogPost);
 router.post("/blogs/share/:id", isAuthenticatedUser, shareBlogPost);
