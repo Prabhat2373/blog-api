@@ -218,9 +218,9 @@ export const getAllPosts = catchAsyncErrors(
   async (req: RequestType, res: Response) => {
     // console.log("request", req);
     console.log("1");
-    const blogPosts = await Blog.find({ status: "published" }).populate(
-      "author"
-    );
+    const blogPosts = await Blog.find({ status: "published" })
+      .populate("author")
+      .sort("-createdAt");
     console.log("blogPosts", blogPosts);
     if (blogPosts) {
       // res.json(blogPosts);

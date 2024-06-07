@@ -148,6 +148,40 @@ export const getUser = catchAsyncErrors(
     }
   }
 );
+export const getAuthor = catchAsyncErrors(
+  async (req: RequestType, res: Response) => {
+    const id = req.params?.authorId;
+    if (id) {
+      // Fetch user account without password
+      const userAccount = await UserAccount.findById(id)
+        .select("-password")
+        .exec();
+
+      if (!userAccount) {
+        return sendApiResponse(res, "error", null, "User not found", 400);
+      }
+
+      // Fetch articles for the user
+      const articles = await Blog.find({ author: id }).exec();
+      const drafts = await Blog.find({
+        author: req.user?._id,
+        status: "draft",
+      }).exec();
+
+      // Combine user account and articles
+      const userWithArticles = { ...userAccount.toObject(), articles, drafts };
+
+      return sendApiResponse(
+        res,
+        "success",
+        userWithArticles, // Return the combined object
+        "User found successfully"
+      );
+    } else {
+      return sendApiResponse(res, "error", {}, "Account not found", 401);
+    }
+  }
+);
 
 export const followUser = catchAsyncErrors(
   async (req: RequestType, res: Response) => {

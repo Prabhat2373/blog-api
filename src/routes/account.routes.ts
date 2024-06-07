@@ -1,5 +1,6 @@
 import {
   followUser,
+  getAuthor,
   getUser,
   loginUser,
   registerUser,
@@ -13,6 +14,7 @@ accountRouter.post("/login", loginUser);
 accountRouter.post("/register", registerUser);
 
 accountRouter.get("/profile", isAuthenticatedUser, getUser);
+accountRouter.get("/author/profile/:authorId", isAuthenticatedUser, getAuthor);
 accountRouter.post("/follow/:id", isAuthenticatedUser, followUser);
 accountRouter.post("/unfollow/:id", isAuthenticatedUser, unfollowUser);
 
