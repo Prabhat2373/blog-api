@@ -192,9 +192,10 @@ export const followUser = catchAsyncErrors(
       userToFollow.followers.push(user._id);
       await user.save();
       await userToFollow.save();
-      res.status(200).json({ message: "User followed successfully" });
+      // res.status(200).json({ message: "User followed successfully" });
+      return sendApiResponse(res, "success", user, "You are following.");
     } else {
-      res.status(400).json({ message: "User already followed" });
+      return sendApiResponse(res, "error", {}, "User already followed", 400);
     }
   }
 );
@@ -212,9 +213,16 @@ export const unfollowUser = catchAsyncErrors(
       );
       await user.save();
       await userToUnfollow.save();
-      res.status(200).json({ message: "User unfollowed successfully" });
+
+      return sendApiResponse(
+        res,
+        "success",
+        user,
+        "User unfollowed successfully",
+        200
+      );
     } else {
-      res.status(400).json({ message: "User not followed" });
+      return sendApiResponse(res, "error", {}, "User not followed", 400);
     }
   }
 );

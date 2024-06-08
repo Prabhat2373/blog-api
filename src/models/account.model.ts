@@ -3,7 +3,8 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 
-import findOrCreate from "mongoose-findorcreate";
+// import findOrCreate from "mongoose-findorcreate";
+const findOrCreate = require("mongoose-findorcreate");
 
 export enum UserRole {
   READER = "reader",
@@ -50,8 +51,9 @@ userAccountSchema.pre<IUserAccount>("save", async function (next) {
   if (!this.isModified("password")) {
     return next();
   }
-
-  this.password = await bcrypt.hash(this.password, 10);
+  if (this.password) {
+    this.password = await bcrypt.hash(this.password, 10);
+  }
   next();
 });
 

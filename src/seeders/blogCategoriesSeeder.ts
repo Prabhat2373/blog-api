@@ -1,24 +1,29 @@
-import { blogCategories } from "../__mocks__/blog.categories.seeder.data";
-import BlogCategory from "../models/blog.categories.model";
 import mongoose from "mongoose";
-// import BlogCategory from "@/models/blogCategory.model";
-// import { blogCategories } from "@/data/blogCategories"; // Import the blog categories data
+import BlogCategory from "../models/blog.categories.model";
+import { blogCategories } from "../__mocks__/blog.categories.seeder.data";
 
-// Function to seed the blog categories collection
 const blogCategoriesSeeder = async () => {
   try {
     console.log("Running seeder...");
+
     // Connect to the MongoDB database
     await mongoose.connect("mongodb://127.0.0.1:27017/blog");
+    console.log("Connected to database");
 
     // Remove any existing data from the blog categories collection
     await BlogCategory.deleteMany({});
+    console.log("Existing blog categories removed");
+
+    // Log the data to be inserted
+    // console.log("Blog categories to be inserted:", blogCategories);
 
     // Insert the blog categories data into the collection
-    await BlogCategory.insertMany(blogCategories);
+    const result = await BlogCategory.insertMany(blogCategories);
+    // console.log("Blog categories inserted:", result);
 
     // Disconnect from the database
     await mongoose.disconnect();
+    console.log("Disconnected from database");
 
     console.log("Seeding completed successfully!");
   } catch (error) {
@@ -26,7 +31,6 @@ const blogCategoriesSeeder = async () => {
   }
 };
 
-// Call the seeding function
 blogCategoriesSeeder();
 
 export default blogCategoriesSeeder;

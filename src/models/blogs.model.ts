@@ -73,6 +73,10 @@ const BlogPostSchema: Schema = new Schema(
     likes: [{ type: Schema.Types.ObjectId, ref: "Account" }],
     comments: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
     status: { type: String, enum: ["draft", "published"], default: "draft" }, // New field
+    // views: { type: Number, required: false },
+    anonymousViews: { type: [String], default: [] }, // Array to store anonymous view identifiers
+    views: [{ type: Schema.Types.ObjectId, ref: "Account" }], // Array to store account IDs
+    viewsCount: { type: Number, default: 0 }, // Total views count
   },
   { timestamps: true }
 );

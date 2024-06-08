@@ -8,6 +8,7 @@ import { Response } from "express";
 import { BASE_URL } from "./user.controller";
 import { type Request } from "express";
 import Reply from "@/models/reply.model";
+import mongoose from "mongoose";
 // const uploadMiddleware = createUploadMiddleware("thumbnail");
 
 export const createBlogPost = catchAsyncErrors(
@@ -238,9 +239,43 @@ export const getBlogPost = catchAsyncErrors(
   async (req: RequestType, res: Response) => {
     const blogPost = await Blog.findById(req.params.id).populate("author");
     if (blogPost) {
-      res.json(blogPost);
+      const userId = req.user?.id; // Assuming req.user contains the authenticated user's info
+      const anonymousIdentifier =
+        req.ip || req.headers["x-forwarded-for"] || req.sessionID; // Fallback to IP or session ID for anonymous users
+
+      console.log("anonymousIdentifier", anonymousIdentifier);
+      let hasViewed = false;
+
+      if (userId) {
+        // Check if the user ID is already in the views array
+        hasViewed = blogPost.views.includes(userId);
+        if (!hasViewed) {
+          blogPost.views.push(new mongoose.Types.ObjectId(userId));
+        }
+      } else {
+        // Check if the anonymous identifier is already in the anonymousViews array
+        hasViewed = blogPost.anonymousViews.includes(anonymousIdentifier);
+        if (!hasViewed) {
+          blogPost.anonymousViews.push(anonymousIdentifier);
+        }
+      }
+
+      if (!hasViewed) {
+        blogPost.viewsCount += 1;
+        await blogPost.save();
+      }
+
+      // await blogPost.updateOne({ views: updatedViews });
+      return sendApiResponse(
+        res,
+        "error",
+        blogPost,
+        "Blog post found successfully",
+        200
+      );
     } else {
-      res.status(404).json({ message: "Blog post not found" });
+      // res.status(404).json({ message: "Blog post not found" });
+      return sendApiResponse(res, "error", {}, "Blog post not found", 400);
     }
   }
 );
