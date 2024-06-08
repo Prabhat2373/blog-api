@@ -226,3 +226,17 @@ export const unfollowUser = catchAsyncErrors(
     }
   }
 );
+
+export const getAllAuthors = catchAsyncErrors(
+  async (req: Request, res: Response) => {
+    const authors = await UserAccount.find({}).populate("articles");
+
+    return sendApiResponse(
+      res,
+      "success",
+      authors,
+      "Authors Found Successfully",
+      200
+    );
+  }
+);
