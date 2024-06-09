@@ -11,6 +11,7 @@ import accountRouter from "./routes/account.routes";
 import blogRouter from "./routes/blogs.routes";
 import authRouter from "./routes/auth.routes";
 import passport from "passport";
+import authorRoutes from "./routes/author.routes";
 
 const app: Application = express();
 
@@ -38,6 +39,7 @@ app.use(passport.authenticate("session"));
 app.use("/api/v1", accountRouter);
 app.use("/api/v1", blogRouter);
 app.use("/api/v1", authRouter);
+app.use("/api/v1", authorRoutes);
 
 app.get("/api/v1/files/:name", download);
 app.get("/api/v1/uploads/:name", download);
