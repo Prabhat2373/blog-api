@@ -1,4 +1,5 @@
 import mongoose, { Document, Schema } from "mongoose";
+import mongoosePaginate from "mongoose-paginate-v2";
 
 export interface IBlogPost extends Document {
   title: string;
@@ -74,6 +75,7 @@ const BlogPostSchema: Schema = new Schema(
     comments: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
     status: { type: String, enum: ["draft", "published"], default: "draft" }, // New field
     // views: { type: Number, required: false },
+    savedBy: [{ type: Schema.Types.ObjectId, ref: "Account" }], // Array to store IDs of users who saved the post
     anonymousViews: { type: [String], default: [] }, // Array to store anonymous view identifiers
     views: [{ type: Schema.Types.ObjectId, ref: "Account" }], // Array to store account IDs
     viewsCount: { type: Number, default: 0 }, // Total views count
@@ -81,6 +83,7 @@ const BlogPostSchema: Schema = new Schema(
   { timestamps: true }
 );
 
+BlogPostSchema.plugin(mongoosePaginate);
 const Blog = mongoose.model<IBlogPost>("Posts", BlogPostSchema);
 
 export default Blog;

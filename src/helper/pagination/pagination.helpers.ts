@@ -8,3 +8,15 @@ export const formatPaginate = (err, result) => {
   };
   return response;
 };
+
+export const basePaginationOptions = {
+  page: 1,
+  limit: 10,
+  sort: "-createdAt",
+  // populate: [
+  //   { path: "client_id", model: Client },
+  //   { path: "required_skills", model: Skill },
+  //   { path: "expected_duration_id", model: ExpectedDuration },
+  //   { path: "complexity_id", model: Complexity },
+  // ],
+};

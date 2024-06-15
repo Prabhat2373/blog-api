@@ -44,6 +44,7 @@ const userAccountSchema: Schema = new Schema({
   followers: [{ type: Schema.Types.ObjectId, ref: "Account" }],
   following: [{ type: Schema.Types.ObjectId, ref: "Account" }],
   articles: [{ type: Schema.Types.ObjectId, ref: "Posts" }],
+  savedPosts: [{ type: Schema.Types.ObjectId, ref: "Posts" }], // Array to store IDs of saved posts
 });
 
 // Hash password before saving

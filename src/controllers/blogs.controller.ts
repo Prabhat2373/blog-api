@@ -1,14 +1,18 @@
 import { RequestType } from "@/constants/AppConstants";
+import {
+  basePaginationOptions,
+  formatPaginate,
+} from "@/helper/pagination/pagination.helpers";
 import catchAsyncErrors from "@/middlewares/catchAsyncErrors";
-import Upload from "@/middlewares/upload";
+import BlogCategory from "@/models/blog.categories.model";
 import Blog from "@/models/blogs.model";
 import Comment from "@/models/comment.model";
-import { sendApiResponse } from "@/utils/utils";
-import { Response } from "express";
-import { BASE_URL } from "./user.controller";
-import { type Request } from "express";
 import Reply from "@/models/reply.model";
+import { sendApiResponse, sendPaginatedApiResponse } from "@/utils/utils";
+import { Response, type Request } from "express";
 import mongoose from "mongoose";
+import { BASE_URL } from "./user.controller";
+import UserAccount from "@/models/account.model";
 // const uploadMiddleware = createUploadMiddleware("thumbnail");
 
 export const createBlogPost = catchAsyncErrors(
@@ -38,31 +42,6 @@ export const createBlogPost = catchAsyncErrors(
     );
   }
 );
-
-// export const createDraft = catchAsyncErrors(
-//   async (req: RequestType, res: Response) => {
-//     const { title, content, tags } = req.body;
-
-//     const draftPost = new Blog({
-//       title,
-//       content,
-//       author: req.user?._id,
-//       status: "draft",
-//       tags,
-//       // thumbnail: req.body.thumbnail || "",
-//     });
-
-//     await draftPost.save();
-
-//     return sendApiResponse(
-//       res,
-//       "success",
-//       draftPost,
-//       "Draft created successfully",
-//       201
-//     );
-//   }
-// );
 
 export const updateBlog = catchAsyncErrors(
   async (req: RequestType, res: Response) => {
@@ -217,15 +196,32 @@ export const getUserDrafts = catchAsyncErrors(
 
 export const getAllPosts = catchAsyncErrors(
   async (req: RequestType, res: Response) => {
-    // console.log("request", req);
+    const limit = req.query?.limit ? Number(req.query?.limit) : 10;
+    const page = req.query?.page ? Number(req.query?.page) : 0;
+    const query = {};
+
+    const options = basePaginationOptions;
+    options.limit = limit;
+    options.page = page;
+    options.populate = [{ path: "author", model: UserAccount }];
+    console.log("options", options);
+    query.status = "published";
+
     console.log("1");
-    const blogPosts = await Blog.find({ status: "published" })
-      .populate("author")
-      .sort("-createdAt");
+    // const blogPosts = await Blog.find({ status: "published" })
+    //   .populate("author")
+    //   .sort("-createdAt");
+
+    const blogPosts = await Blog.paginate(
+      query,
+      basePaginationOptions,
+      formatPaginate
+    );
+
     console.log("blogPosts", blogPosts);
     if (blogPosts) {
       // res.json(blogPosts);
-      return sendApiResponse(
+      return sendPaginatedApiResponse(
         res,
         "success",
         blogPosts,
@@ -235,6 +231,60 @@ export const getAllPosts = catchAsyncErrors(
     }
   }
 );
+
+export const getFollowingPosts = catchAsyncErrors(async (req, res) => {
+  const limit = req.query?.limit ? Number(req.query?.limit) : 10;
+  const page = req.query?.page ? Number(req.query?.page) : 0;
+
+  if (!req.user?.id) {
+    return sendPaginatedApiResponse(
+      res,
+      "error",
+      [],
+      "User not authenticated",
+      401
+    );
+  }
+
+  const user = await UserAccount.findById(req.user.id).populate("following");
+  if (!user) {
+    return sendPaginatedApiResponse(res, "error", [], "User not found", 404);
+  }
+
+  const followingAuthorIds = user.following.map((following) => following._id);
+  const query = {
+    status: "published",
+    author: { $in: followingAuthorIds },
+  };
+
+  const options = {
+    ...basePaginationOptions,
+    limit,
+    page,
+    populate: [{ path: "author", model: UserAccount }],
+  };
+
+  const blogPosts = await Blog.paginate(query, options, formatPaginate);
+
+  if (blogPosts) {
+    return sendPaginatedApiResponse(
+      res,
+      "success",
+      blogPosts,
+      "Blog Posts from Following Authors Found Successfully",
+      200
+    );
+  } else {
+    return sendPaginatedApiResponse(
+      res,
+      "error",
+      [],
+      "No Blog Posts Found",
+      404
+    );
+  }
+});
+
 export const getBlogPost = catchAsyncErrors(
   async (req: RequestType, res: Response) => {
     const blogPost = await Blog.findById(req.params.id).populate("author");
@@ -292,34 +342,6 @@ export const likeBlogPost = catchAsyncErrors(
     }
   }
 );
-
-// export const commentOnBlogPost = catchAsyncErrors(
-//   async (req: RequestType, res: Response) => {
-//     const { content } = req.body;
-//     const blogPost = await Blog.findById(req.params.id);
-//     if (blogPost) {
-//       const comment = new Comment({
-//         content,
-//         author: req?.user?.id,
-//         post: req.params.id,
-//       });
-//       await comment.save();
-//       blogPost.comments.push(comment._id);
-//       await blogPost.save();
-//       // res.status(201).json(comment);
-//       return sendApiResponse(
-//         res,
-//         "success",
-//         comment,
-//         "Comment Posted Successfully",
-//         200
-//       );
-//     } else {
-//       // res.status(404).json({ message: "Blog post not found" });
-//       return sendApiResponse(res, "error", null, "Blog post not found", 404);
-//     }
-//   }
-// );
 
 export const commentOnBlogPost = catchAsyncErrors(
   async (req: Request, res: Response) => {
@@ -494,5 +516,93 @@ export const deleteReply = catchAsyncErrors(
     } else {
       return sendApiResponse(res, "error", null, "Reply not found", 404);
     }
+  }
+);
+
+export const getBlogTopics = catchAsyncErrors(
+  async (req: RequestType, res: Response) => {
+    // const topics = await BlogCategory.find({})
+
+    const limit = req.query?.limit ? Number(req.query?.limit) : 10;
+    const page = req.query?.page ? Number(req.query?.page) : 0;
+    const query = {
+      limit,
+    };
+
+    const options = basePaginationOptions;
+    options.limit = limit;
+    options.page = page;
+    console.log("options", options);
+    // options.page = page;
+
+    const topics = await BlogCategory.paginate(query, options, formatPaginate);
+
+    if (topics) {
+      return sendPaginatedApiResponse(
+        res,
+        "success",
+        topics,
+        "Topics Found Successfully",
+        200
+      );
+    }
+  }
+);
+
+export const savePost = catchAsyncErrors(
+  async (req: RequestType, res: Response) => {
+    const userId = req.user.id; // Assuming req.user contains the authenticated user's info
+    const postId = req.params.id;
+
+    const post = await Blog.findById(postId);
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    if (!post.savedBy.includes(userId)) {
+      post.savedBy.push(userId);
+      await post.save();
+
+      const user = await UserAccount.findById(userId);
+      if (!user.savedPosts.includes(postId)) {
+        user.savedPosts.push(postId);
+        await user.save();
+      }
+    }
+
+    return sendApiResponse(res, "success", {}, "Post saved successfully", 200);
+  }
+);
+
+export const unsavePost = catchAsyncErrors(
+  async (req: RequestType, res: Response) => {
+    const userId = req.user.id; // Assuming req.user contains the authenticated user's info
+    const postId = req.params.id;
+
+    const post = await Blog.findById(postId);
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    if (post.savedBy.includes(userId)) {
+      post.savedBy = post.savedBy.filter((id) => id.toString() !== userId);
+      await post.save();
+
+      const user = await UserAccount.findById(userId);
+      if (user.savedPosts.includes(postId)) {
+        user.savedPosts = user.savedPosts.filter(
+          (id) => id.toString() !== postId
+        );
+        await user.save();
+      }
+    }
+
+    return sendApiResponse(
+      res,
+      "success",
+      {},
+      "Post unsaved successfully",
+      200
+    );
   }
 );
