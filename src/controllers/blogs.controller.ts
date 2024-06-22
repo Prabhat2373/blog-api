@@ -17,7 +17,7 @@ import UserAccount from "@/models/account.model";
 
 export const createBlogPost = catchAsyncErrors(
   async (req: Request, res: Response) => {
-    const { title, content, tags } = req.body;
+    const { title, content, tags, scheduledAt } = req.body;
     console.log("tags", tags);
     const parsedTags = JSON.parse(tags)?.length ? JSON.parse(tags) : [];
     console.log("parsedTags", parsedTags);
@@ -27,8 +27,10 @@ export const createBlogPost = catchAsyncErrors(
       content: JSON.parse(content),
       author: req?.user?.id,
       tags: parsedTags,
+      scheduledAt: scheduledAt ? new Date(scheduledAt) : null,
       thumbnail: BASE_URL + req.fileUpload?.filename || "",
-      status: "published",
+      // status: "published",
+      status: scheduledAt ? "scheduled" : "published",
     });
     // console.log("blogPost", blogPost);
     await blogPost.save();
@@ -198,6 +200,7 @@ export const getAllPosts = catchAsyncErrors(
   async (req: RequestType, res: Response) => {
     const limit = req.query?.limit ? Number(req.query?.limit) : 10;
     const page = req.query?.page ? Number(req.query?.page) : 0;
+    const status = req.query?.status;
     const query = {};
 
     const options = basePaginationOptions;
@@ -205,7 +208,7 @@ export const getAllPosts = catchAsyncErrors(
     options.page = page;
     options.populate = [{ path: "author", model: UserAccount }];
     console.log("options", options);
-    query.status = "published";
+    query.status = status || "published";
 
     console.log("1");
     // const blogPosts = await Blog.find({ status: "published" })
@@ -318,7 +321,7 @@ export const getBlogPost = catchAsyncErrors(
       // await blogPost.updateOne({ views: updatedViews });
       return sendApiResponse(
         res,
-        "error",
+        "success",
         blogPost,
         "Blog post found successfully",
         200

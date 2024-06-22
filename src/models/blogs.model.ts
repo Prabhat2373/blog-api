@@ -12,6 +12,7 @@ export interface IBlogPost extends Document {
   likes: mongoose.Types.ObjectId[];
   comments: mongoose.Types.ObjectId[];
   updatedAt: Date;
+  scheduledAt?: Date;
 }
 
 export interface IContent {
@@ -73,8 +74,13 @@ const BlogPostSchema: Schema = new Schema(
     tags: { type: [String], default: [] },
     likes: [{ type: Schema.Types.ObjectId, ref: "Account" }],
     comments: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
-    status: { type: String, enum: ["draft", "published"], default: "draft" }, // New field
+    status: {
+      type: String,
+      enum: ["draft", "published", "scheduled"],
+      default: "draft",
+    }, // New field
     // views: { type: Number, required: false },
+    scheduledAt: { type: Date, default: null },
     savedBy: [{ type: Schema.Types.ObjectId, ref: "Account" }], // Array to store IDs of users who saved the post
     anonymousViews: { type: [String], default: [] }, // Array to store anonymous view identifiers
     views: [{ type: Schema.Types.ObjectId, ref: "Account" }], // Array to store account IDs
